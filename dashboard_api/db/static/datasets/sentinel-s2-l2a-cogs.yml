@@ -1,0 +1,8 @@
+id: sntnl-s2-l2a-cogs
+source:
+  type: STAC
+  endpoint: https://earth-search.aws.element84.com/v0/collections/sentinel-s2-l2a-cogs/items
+  create_mosaic: true
+  params:
+    datetime: 2021-04-25T00:00:00Z/2021-04-25T02:00:00Z
+    limit: 500
