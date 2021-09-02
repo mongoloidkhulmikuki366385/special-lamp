@@ -1,0 +1,34 @@
+{
+    "id": "MOD13A1_006",
+    "name": "MODIS Vegetation Indices MOD13A1.006",
+    "type": "raster-timeseries",
+    "time_unit": "day",
+    "is_periodic": false,
+    "s3_location": "MOD13A1.006",
+    "s3_bucket": "modis-vi-nasa",
+    "swatch": {
+        "color": "#189C54",
+        "name": "Dark Green"
+    },
+    "source": {
+        "type": "raster",
+        "tiles": [
+            "{api_url}/{z}/{x}/{y}@1x?url=https://modis-vi-nasa.s3.amazonaws.com/MOD13A1.006/{date}.tif&resampling_method=nearest&bidx=1&rescale=-0.20000000298023224%2C0.9945999979972839&color_map=gist_earth"
+        ]
+    },
+    "legend": {
+        "type": "gradient-adjustable",
+        "min": "-20000",
+        "max": "0",
+        "stops": [
+            "#313695",
+            "#588cbf",
+            "#a3d2e5",
+            "#e8f6e8",
+            "#fee89c",
+            "#fba55c",
+            "#e24932"
+        ]
+    },
+    "info": ""
+}

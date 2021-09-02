@@ -1,0 +1,2 @@
+include dashboard_api/templates/*.html
+include dashboard_api/templates/*.xml
