@@ -1,0 +1,84 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+env:
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      - name: Configure AWS credentials from AWS Account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - uses: franzbischoff/replace_envs@v1
+        env:
+          PROJECT_NAME: 'template-project'
+          DATA_BUCKET: 'bucket-does-not-exist'
+          STAGE: ${{ steps.extract_branch.outputs.branch }}
+          STAC_API_URL: ''
+          VECTOR_TILESERVER_URL: ''
+          TITILER_SERVER_URL: ''
+        with:
+          from_file: 'stack/config.yml.example'
+          to_file: 'stack/config.yml'
+          commit: 'false'
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('package.json') }} # or package-lock.json
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Upgrade pip
+        run: sudo python -m pip install -U pip
+
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Install AWS CDK and pip requirements
+        run: ./install.sh
+
+      - name: Deploy the resources to AWS
+        run: ./deploy.sh
+      
+      - run: echo "Successfully deployed."

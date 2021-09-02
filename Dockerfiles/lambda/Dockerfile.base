@@ -1,0 +1,7 @@
+FROM lambci/lambda:build-python3.7
+
+WORKDIR /app
+
+RUN pip install --upgrade pip && \
+    pip install "numpy~=1.21.0" "rio-tiler==2.0a.11" geojson-pydantic python-binary-memcached rio-toa uhashring \
+     -t /var/task --no-binary numpy,pydantic 
